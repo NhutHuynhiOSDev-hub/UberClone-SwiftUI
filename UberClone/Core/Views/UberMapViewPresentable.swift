@@ -13,6 +13,8 @@ struct UberMapViewPresentable: UIViewRepresentable {
     let mapView         = MKMapView()
     let locationManager = LocationManager()
     
+    @EnvironmentObject var locationSearchViewModel: LocationSearchViewModel
+    
     func makeUIView(context: Context) -> some UIView {
         
         self.mapView.delegate           = context.coordinator
@@ -24,7 +26,9 @@ struct UberMapViewPresentable: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: UIViewType, context: Context) {
-        
+        if let selectedLocation = self.locationSearchViewModel.selectedLocation {
+            print("DEBUG: ViewModel \(selectedLocation)")
+        }
     }
     
     func makeCoordinator() -> MapCoordinator {
@@ -47,7 +51,7 @@ extension UberMapViewPresentable {
             let userLocation = CLLocationCoordinate2D(
                 latitude: userLocation.coordinate.latitude,
                 longitude: userLocation.coordinate.longitude)
-            let span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            let span = MKCoordinateSpan(latitudeDelta: 1.0, longitudeDelta: 1.0)
             
             let region = MKCoordinateRegion(
                 center: userLocation,

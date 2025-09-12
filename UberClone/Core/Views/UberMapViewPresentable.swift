@@ -31,6 +31,7 @@ struct UberMapViewPresentable: UIViewRepresentable {
         if let coordinate = self.locationSearchViewModel.selectedLocationCoordinate {
             print("DEBUG: Selected coordianted in map view: \(coordinate)")
             context.coordinator.addSelectAnnotation(withCoordinate: coordinate)
+            context.coordinator.configurePolyline(withDestinationCoordinate: coordinate)
         }
     }
     
@@ -42,7 +43,9 @@ struct UberMapViewPresentable: UIViewRepresentable {
 extension UberMapViewPresentable {
     
     class MapCoordinator: NSObject, MKMapViewDelegate {
-        let parent: UberMapViewPresentable
+        
+        let parent                  : UberMapViewPresentable
+        var userLocationCoordinate  : CLLocationCoordinate2D?
         
         init(parent: UberMapViewPresentable) {
             self.parent = parent
@@ -51,16 +54,30 @@ extension UberMapViewPresentable {
         
         func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
             
-            let userLocation = CLLocationCoordinate2D(
+            let userLocationCoordinate = CLLocationCoordinate2D(
                 latitude: userLocation.coordinate.latitude,
                 longitude: userLocation.coordinate.longitude)
             let span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
             
             let region = MKCoordinateRegion(
-                center: userLocation,
+                center: userLocationCoordinate,
                 span: span)
     
+            self.userLocationCoordinate = userLocationCoordinate
             self.parent.mapView.setRegion(region, animated: true)
+        }
+        
+        func mapView(_ mapView: MKMapView, rendererFor overlay: any MKOverlay) -> MKOverlayRenderer {
+            
+            if overlay is MKPolyline {
+                let renderer = MKPolylineRenderer(overlay: overlay)
+                
+                renderer.lineWidth      = 3
+                renderer.strokeColor    = .green
+                
+                return renderer
+            }
+            return MKOverlayRenderer()
         }
         
         //MARK: FUNCTIONS
@@ -75,6 +92,40 @@ extension UberMapViewPresentable {
             self.parent.mapView.addAnnotation(anno)
             self.parent.mapView.selectAnnotation(anno, animated: true)
             self.parent.mapView.showAnnotations(self.parent.mapView.annotations, animated: true)
+        }
+        
+        func configurePolyline(withDestinationCoordinate coordinate: CLLocationCoordinate2D) {
+            
+            guard let userLocationCoordinates = self.userLocationCoordinate else { return }
+            
+            self.getDestinationRoute(from: userLocationCoordinates, to: coordinate) { route in
+                
+                self.parent.mapView.addOverlay(route.polyline)
+            }
+        }
+        
+        func getDestinationRoute(from userLocation: CLLocationCoordinate2D,
+                                 to destinationCoordinator: CLLocationCoordinate2D,
+                                 completion: @escaping(MKRoute) -> Void) {
+            
+            let request                 = MKDirections.Request()
+            let direction               = MKDirections(request: request)
+            let userPlacemark           = MKPlacemark(coordinate: userLocation)
+            let destinationPlacemark    = MKPlacemark(coordinate: destinationCoordinator)
+            
+            request.source      = MKMapItem(placemark: userPlacemark)
+            request.destination = MKMapItem(placemark: destinationPlacemark)
+             
+            direction.calculate { response, error in
+                if let error = error {
+                    print("DEBUG: Failed to get direections with erorr \(error.localizedDescription)")
+                    
+                    return
+                }
+                
+                guard let route = response?.routes.first else { return }
+                completion(route)
+            }
         }
     }
 }

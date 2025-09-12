@@ -58,7 +58,7 @@ struct LocationSearchView: View {
                             .onTapGesture {
                                 withAnimation {
                                     showLocationSearchView.toggle()
-                                    self.locationSearchViewModel.selectLocation(result.title)
+                                    self.locationSearchViewModel.selectLocation(result)
                                 }
                             }
                     }

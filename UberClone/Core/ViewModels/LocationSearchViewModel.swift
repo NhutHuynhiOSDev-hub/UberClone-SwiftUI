@@ -12,19 +12,12 @@ import Foundation
 class LocationSearchViewModel: NSObject, ObservableObject {
     
     //MARK: PROPERTIES
-    @Published var selectedLocation : String?
-    @Published var queryFrament     : String = ""
-    @Published var results = [MKLocalSearchCompletion]()
+    @Published var queryFrament                 : String = ""
+    @Published var selectedLocationCoordinate   : CLLocationCoordinate2D?
+    @Published var results                      : [MKLocalSearchCompletion] = [MKLocalSearchCompletion]()
     
     private var cancellables    = Set<AnyCancellable>()
     private let searchCompleter = MKLocalSearchCompleter()
-    
-//    var queryFrament: String = "" {
-//        didSet {
-//            print("DEBUG: query fragment is \(self.queryFrament)")
-//            self.searchCompleter.queryFragment = self.queryFrament
-//        }
-//    }
 
     override init() {
         super.init()
@@ -43,10 +36,36 @@ class LocationSearchViewModel: NSObject, ObservableObject {
     }
     
     //MARK: FUNCTIONS
-    func selectLocation(_ location: String) {
-        print("DEBUG: Selected Location \(location)")
-        self.selectedLocation = location
+    func selectLocation(_ localSearch: MKLocalSearchCompletion) {
+        self.locationSearch(forLocalSearchCompletion: localSearch) { response, error in
+            
+            if let error = error {
+                print("DEBUG: Location search failed with error \(error.localizedDescription)")
+                
+                return
+            }
+            
+            guard let item = response?.mapItems.first else { return }
+            
+            let coordinate = item.placemark.coordinate
+            
+            self.selectedLocationCoordinate = coordinate
+            
+            print("DEBUG: Location coordinator \(coordinate)")
+        }
+    }
+    
+    // Search location details
+    func locationSearch(forLocalSearchCompletion localSearch: MKLocalSearchCompletion,
+                        completion: @escaping MKLocalSearch.CompletionHandler) {
         
+        let searchRequet = MKLocalSearch.Request()
+        searchRequet.naturalLanguageQuery = localSearch.title.appending(localSearch.subtitle)
+        
+        let search = MKLocalSearch(request: searchRequet)
+        search.start { response, error in
+            completion(response, error)
+        }
     }
 }
 

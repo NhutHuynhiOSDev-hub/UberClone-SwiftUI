@@ -10,8 +10,10 @@ import Combine
 import Foundation
 
 class LocationSearchViewModel: NSObject, ObservableObject {
+    
     //MARK: PROPERTIES
-    @Published var queryFrament: String = ""
+    @Published var selectedLocation : String?
+    @Published var queryFrament     : String = ""
     @Published var results = [MKLocalSearchCompletion]()
     
     private var cancellables    = Set<AnyCancellable>()
@@ -38,6 +40,13 @@ class LocationSearchViewModel: NSObject, ObservableObject {
                 self.searchCompleter.queryFragment = queryFrament
             }
             .store(in: &cancellables)
+    }
+    
+    //MARK: FUNCTIONS
+    func selectLocation(_ location: String) {
+        print("DEBUG: Selected Location \(location)")
+        self.selectedLocation = location
+        
     }
 }
 

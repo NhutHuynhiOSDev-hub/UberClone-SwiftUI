@@ -11,8 +11,8 @@ struct LocationSearchView: View {
     
     //MARK: PROPERTIES
     @State private var startLocationText = ""
-    @State private var destinationLocationText = ""
-    @StateObject private var locationSearchViewModel = LocationSearchViewModel()
+    @Binding var showLocationSearchView: Bool
+    @EnvironmentObject var locationSearchViewModel: LocationSearchViewModel
     
     //MARK: BODY
     var body: some View {
@@ -55,6 +55,12 @@ struct LocationSearchView: View {
                 VStack(alignment: .leading) {
                     ForEach(locationSearchViewModel.results, id:\.self) { result in
                         LocationSearchRow(title: result.title, subTitle: result.subtitle)
+                            .onTapGesture {
+                                withAnimation {
+                                    showLocationSearchView.toggle()
+                                    self.locationSearchViewModel.selectLocation(result.title)
+                                }
+                            }
                     }
                 }//:VSTACK
             }//:SCROLL
@@ -66,6 +72,6 @@ struct LocationSearchView: View {
 //MARK: PREVIEW
 struct LocationSearchView_Previews: PreviewProvider {
     static var previews: some View {
-        LocationSearchView()
+        LocationSearchView(showLocationSearchView: .constant(false))
     }
 }

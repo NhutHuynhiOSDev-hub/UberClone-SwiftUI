@@ -11,6 +11,7 @@ struct HomeView: View {
     
     //MARK: PROPERTIES
     @State private var mapViewState: MapViewState = .noInput
+    @EnvironmentObject var locationSearchViewModel: LocationSearchViewModel
     
     //MARK: BODY
     var body: some View {
@@ -42,6 +43,12 @@ struct HomeView: View {
             }
         }
         .edgesIgnoringSafeArea(.bottom)
+        .onReceive(LocationManager.shared.$userLocationCoordinate) { locationCoordinate in
+            if let locationCoordinate = locationCoordinate {
+                print("DEBUG: Current User Location: \(locationCoordinate)")
+                self.locationSearchViewModel.userLocationCoordiante = locationCoordinate
+            }
+        }
     }
 }
 

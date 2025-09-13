@@ -12,7 +12,7 @@ struct UberMapViewPresentable: UIViewRepresentable {
     
     //MARK: PROPERTIES
     let mapView         = MKMapView()
-    let locationManager = LocationManager()
+    let locationManager = LocationManager.shared
     
     @Binding            var mapViewState: MapViewState
     @EnvironmentObject  var locationSearchViewModel: LocationSearchViewModel

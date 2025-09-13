@@ -12,9 +12,10 @@ import Foundation
 class LocationSearchViewModel: NSObject, ObservableObject {
     
     //MARK: PROPERTIES
-    @Published var queryFrament                 : String = ""
-    @Published var selectedLocationCoordinate   : CLLocationCoordinate2D?
-    @Published var results                      : [MKLocalSearchCompletion] = [MKLocalSearchCompletion]()
+    @Published  var queryFrament                : String = ""
+    @Published  var selectedLocationCoordinate  : CLLocationCoordinate2D?
+    @Published  var results                     : [MKLocalSearchCompletion] = [MKLocalSearchCompletion]()
+                var userLocationCoordiante      : CLLocationCoordinate2D?
     
     private var cancellables    = Set<AnyCancellable>()
     private let searchCompleter = MKLocalSearchCompleter()
@@ -66,6 +67,18 @@ class LocationSearchViewModel: NSObject, ObservableObject {
         search.start { response, error in
             completion(response, error)
         }
+    }
+    
+    func computeRidePrice(forType type: RideType) -> Double {
+        
+        guard let currentCoordinate = self.userLocationCoordiante else { return 0.0 }
+        guard let destinationCoordinate = self.selectedLocationCoordinate else { return 0.0 }
+        
+        let userLocation        = CLLocation(latitude: currentCoordinate.latitude, longitude: currentCoordinate.longitude)
+        let destinationLocation = CLLocation(latitude: destinationCoordinate.latitude, longitude: destinationCoordinate.longitude)
+        let tripDistanceInMeter = userLocation.distance(from: destinationLocation)
+        
+        return type.computePrice(for: tripDistanceInMeter)
     }
 }
 

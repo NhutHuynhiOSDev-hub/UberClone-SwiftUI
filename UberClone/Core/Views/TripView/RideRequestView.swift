@@ -13,6 +13,7 @@ struct RideRequestView: View {
             Capsule()
                 .foregroundStyle(Color(.systemGray5))
                 .frame(width: 48, height: 6)
+                .padding(.top, 8)
             
             HStack {
                 // Indicator View
@@ -144,12 +145,16 @@ struct RideRequestView: View {
                     .cornerRadius(10)
             }
         }//:VSTACK
+        .padding(.bottom, 32)
         .background(Color(.white))
+        .cornerRadius(16)
+        
     }
 }
 
 struct RiderequestView_Preview: PreviewProvider {
     static var previews: some View {
         RideRequestView()
+        
     }
 }

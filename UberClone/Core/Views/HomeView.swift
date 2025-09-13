@@ -14,30 +14,39 @@ struct HomeView: View {
     
     //MARK: BODY
     var body: some View {
-        ZStack(alignment: .top) {
-            UberMapViewPresentable(mapViewState: $mapViewState)
-                .ignoresSafeArea()
-            
-            if mapViewState  == .searchingForLocation {
-                LocationSearchView(mapViewState: $mapViewState)
-            } else if mapViewState == .noInput {
-                LocationSearchActivationView()
-                    .padding(.top, 72)
-                    .onTapGesture {
-                        withAnimation {
-                            self.mapViewState = .searchingForLocation
+        ZStack(alignment: .bottom) {
+            ZStack(alignment: .top) {
+                UberMapViewPresentable(mapViewState: $mapViewState)
+                    .ignoresSafeArea()
+                
+                if mapViewState  == .searchingForLocation {
+                    LocationSearchView(mapViewState: $mapViewState)
+                } else if mapViewState == .noInput {
+                    LocationSearchActivationView()
+                        .padding(.top, 72)
+                        .onTapGesture {
+                            withAnimation {
+                                self.mapViewState = .searchingForLocation
+                            }
                         }
-                    }
+                }
+                
+                MapViewActionButton(mapViewState: $mapViewState)
+                    .padding(.leading, 24)
+                    .padding(.top, 4)
             }
             
-            MapViewActionButton(mapViewState: $mapViewState)
-                .padding(.leading, 24)
-                .padding(.top, 4)
+            if self.mapViewState == .locationSelected {
+                RideRequestView()
+                    .transition(.move(edge: .bottom))
+            }
         }
+        .edgesIgnoringSafeArea(.bottom)
     }
 }
 
 //MARK: PREVIEW
 #Preview {
     HomeView()
+        .environmentObject(LocationSearchViewModel())
 }

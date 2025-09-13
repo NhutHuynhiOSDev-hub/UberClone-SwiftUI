@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct RideRequestView: View {
+    
+    @State private var selectedRideType: RideType = .uberX
+    
     var body: some View {
         VStack(spacing: 8) {
             Capsule()
@@ -80,14 +83,14 @@ struct RideRequestView: View {
             
             ScrollView(.horizontal) {
                 HStack(spacing: 12) {
-                    ForEach(0..<3, id: \.self) { _ in
+                    ForEach(RideType.allCases) { rideType in
                         VStack(alignment: .leading) {
-                            Image("uber-x")
+                            Image(rideType.imageName)
                                 .resizable()
                                 .scaledToFit()
                             
-                            VStack(spacing: 4) {
-                                Text("Uber-X")
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(rideType.description)
                                     .font(.system(size: 14).weight(.semibold))
                                 
                                 Text("$22.04")
@@ -96,8 +99,16 @@ struct RideRequestView: View {
                             .padding()
                         }
                         .frame(width: UIScreen.main.bounds.width/3, height: 140)
-                        .background(Color(.systemGroupedBackground))
+                        .foregroundStyle(rideType == self.selectedRideType ? .white : .black)
+                        .scaleEffect(rideType == self.selectedRideType ? 1.2 : 1.0)
+                        .background(Color(rideType == self.selectedRideType ? .systemBlue : .systemGroupedBackground))
                         .cornerRadius(10)
+                        
+                        .onTapGesture(perform: {
+                            withAnimation(.spring()) {
+                                self.selectedRideType = rideType
+                            }
+                        })
                     }
                 }
                 .padding(.horizontal)
@@ -155,6 +166,5 @@ struct RideRequestView: View {
 struct RiderequestView_Preview: PreviewProvider {
     static var previews: some View {
         RideRequestView()
-        
     }
 }

@@ -11,6 +11,7 @@ struct MapViewActionButton: View {
     
     //MARK: PROPERTIES
     @Binding var mapViewState: MapViewState
+    @EnvironmentObject var locationSearchViewmodel: LocationSearchViewModel
     
     //MARK: BODY
     var body: some View {
@@ -38,6 +39,7 @@ struct MapViewActionButton: View {
             mapViewState = .noInput
         case .locationSelected:
             mapViewState = .noInput
+            locationSearchViewmodel.selectedLocationCoordinate = nil
         }
     }
     
@@ -55,5 +57,6 @@ struct MapViewActionButton: View {
 struct  MapViewActionButton_Previews: PreviewProvider {
     static var previews: some View {
         MapViewActionButton(mapViewState: .constant(.noInput))
+            .environmentObject(LocationSearchViewModel())
     }
 }

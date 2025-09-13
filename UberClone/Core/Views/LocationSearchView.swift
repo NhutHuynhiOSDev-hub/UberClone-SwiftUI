@@ -11,7 +11,7 @@ struct LocationSearchView: View {
     
     //MARK: PROPERTIES
     @State private var startLocationText = ""
-    @Binding var showLocationSearchView: Bool
+    @Binding var mapViewState: MapViewState
     @EnvironmentObject var locationSearchViewModel: LocationSearchViewModel
     
     //MARK: BODY
@@ -57,7 +57,7 @@ struct LocationSearchView: View {
                         LocationSearchRow(title: result.title, subTitle: result.subtitle)
                             .onTapGesture {
                                 withAnimation {
-                                    showLocationSearchView.toggle()
+                                    self.mapViewState = .locationSelected
                                     self.locationSearchViewModel.selectLocation(result)
                                 }
                             }
@@ -72,6 +72,6 @@ struct LocationSearchView: View {
 //MARK: PREVIEW
 struct LocationSearchView_Previews: PreviewProvider {
     static var previews: some View {
-        LocationSearchView(showLocationSearchView: .constant(false))
+        LocationSearchView(mapViewState: .constant(.searchingForLocation))
     }
 }

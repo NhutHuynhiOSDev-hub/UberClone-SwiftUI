@@ -14,7 +14,8 @@ struct UberMapViewPresentable: UIViewRepresentable {
     let mapView         = MKMapView()
     let locationManager = LocationManager()
     
-    @EnvironmentObject var locationSearchViewModel: LocationSearchViewModel
+    @Binding            var mapViewState: MapViewState
+    @EnvironmentObject  var locationSearchViewModel: LocationSearchViewModel
     
     //MARK: FUNCTIONS
     func makeUIView(context: Context) -> some UIView {
@@ -28,10 +29,23 @@ struct UberMapViewPresentable: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: UIViewType, context: Context) {
-        if let coordinate = self.locationSearchViewModel.selectedLocationCoordinate {
-            print("DEBUG: Selected coordianted in map view: \(coordinate)")
-            context.coordinator.addSelectAnnotation(withCoordinate: coordinate)
-            context.coordinator.configurePolyline(withDestinationCoordinate: coordinate)
+        
+        print("DEBUG: MapState is: \(mapViewState)")
+        
+        switch mapViewState {
+        case .noInput:
+            context.coordinator.clearMapViewAndRecenterUserLocation()
+            break
+        case .locationSelected:
+            if let coordinate = self.locationSearchViewModel.selectedLocationCoordinate {
+                
+                print("DEBUG: Selected coordianted in map view: \(coordinate)")
+                context.coordinator.addSelectAnnotation(withCoordinate: coordinate)
+                context.coordinator.configurePolyline(withDestinationCoordinate: coordinate)
+            }
+            break
+        case .searchingForLocation:
+            break
         }
     }
     
@@ -44,6 +58,7 @@ extension UberMapViewPresentable {
     
     class MapCoordinator: NSObject, MKMapViewDelegate {
         
+        var currentRegion           : MKCoordinateRegion?
         let parent                  : UberMapViewPresentable
         var userLocationCoordinate  : CLLocationCoordinate2D?
         
@@ -54,6 +69,8 @@ extension UberMapViewPresentable {
         
         func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
             
+            self.userLocationCoordinate = userLocation.coordinate
+            
             let userLocationCoordinate = CLLocationCoordinate2D(
                 latitude: userLocation.coordinate.latitude,
                 longitude: userLocation.coordinate.longitude)
@@ -63,7 +80,8 @@ extension UberMapViewPresentable {
                 center: userLocationCoordinate,
                 span: span)
     
-            self.userLocationCoordinate = userLocationCoordinate
+            self.currentRegion = region
+            
             self.parent.mapView.setRegion(region, animated: true)
         }
         
@@ -92,7 +110,7 @@ extension UberMapViewPresentable {
             self.parent.mapView.addAnnotation(anno)
             self.parent.mapView.selectAnnotation(anno, animated: true)
             self.parent.mapView.showAnnotations(self.parent.mapView.annotations, animated: true)
-        }
+        } 
         
         func configurePolyline(withDestinationCoordinate coordinate: CLLocationCoordinate2D) {
             
@@ -109,22 +127,33 @@ extension UberMapViewPresentable {
                                  completion: @escaping(MKRoute) -> Void) {
             
             let request                 = MKDirections.Request()
-            let direction               = MKDirections(request: request)
             let userPlacemark           = MKPlacemark(coordinate: userLocation)
             let destinationPlacemark    = MKPlacemark(coordinate: destinationCoordinator)
             
             request.source      = MKMapItem(placemark: userPlacemark)
             request.destination = MKMapItem(placemark: destinationPlacemark)
+            
+            let direction = MKDirections(request: request)
              
             direction.calculate { response, error in
                 if let error = error {
-                    print("DEBUG: Failed to get direections with erorr \(error.localizedDescription)")
                     
+                    print("DEBUG: Failed to get direction with erorr \(error.localizedDescription)")
                     return
                 }
                 
                 guard let route = response?.routes.first else { return }
                 completion(route)
+            }
+        }
+        
+        func clearMapViewAndRecenterUserLocation() {
+            
+            self.parent.mapView.removeOverlays(self.parent.mapView.overlays)
+            self.parent.mapView.removeAnnotations(self.parent.mapView.annotations)
+            
+            if let currentRegion = self.currentRegion {
+                parent.mapView.setRegion(currentRegion, animated: true)
             }
         }
     }

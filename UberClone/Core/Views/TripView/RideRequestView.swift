@@ -24,7 +24,7 @@ struct RideRequestView: View {
                 IndicatorView()
                 
                 // Trip Info
-                TripInfoView()
+                TripInfoView(locationSearchViewModel: self.locationSearchViewModel)
                 
             }//:HSTACK
             .padding()
@@ -61,6 +61,9 @@ struct RideRequestView: View {
 }
 
 struct TripInfoView: View {
+    
+    @ObservedObject var locationSearchViewModel: LocationSearchViewModel
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 32) {
             HStack {
@@ -71,21 +74,23 @@ struct TripInfoView: View {
                 
                 Spacer()
                 
-                Text("1:30 PM")
+                Text(locationSearchViewModel.pickupTime ?? "00:00")
                     .font(.system(size: 14)
                         .weight(.semibold))
                     .foregroundStyle(.gray)
             }
             
             HStack {
-                Text("The Coffee House")
-                    .font(.system(size: 16)
-                        .weight(.bold))
-                    .foregroundStyle(.gray)
+                if let location = self.locationSearchViewModel.selectedUberLocation {
+                    Text(location.title)
+                        .font(.system(size: 16)
+                            .weight(.bold))
+                        .foregroundStyle(.black)
+                }
                 
                 Spacer()
                 
-                Text("1:45 PM")
+                Text(locationSearchViewModel.dropOffTime ?? "00:00")
                     .font(.system(size: 14)
                         .weight(.semibold))
                     .foregroundStyle(.gray)

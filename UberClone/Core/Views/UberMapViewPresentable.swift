@@ -35,7 +35,7 @@ struct UberMapViewPresentable: UIViewRepresentable {
             context.coordinator.clearMapViewAndRecenterUserLocation()
             break
         case .locationSelected:
-            if let coordinate = self.locationSearchViewModel.selectedLocationCoordinate {
+            if let coordinate = self.locationSearchViewModel.selectedUberLocation?.coordinate {
                 
                 print("DEBUG: Coordinate is: \(coordinate)")
                 
@@ -107,7 +107,7 @@ extension UberMapViewPresentable {
             
             guard let userLocationCoordinates = self.userLocationCoordinate else { return }
             
-            self.getDestinationRoute(from: userLocationCoordinates, to: coordinate) { route in
+            self.parent.locationSearchViewModel.getDestinationRoute(from: userLocationCoordinates, to: coordinate) { route in
                 
                 self.parent.mapView.addOverlay(route.polyline)
                 
@@ -115,31 +115,6 @@ extension UberMapViewPresentable {
                                                                edgePadding: .init(top: 62, left: 32, bottom: UIScreen.main.bounds.size.height/1.5, right: 32))
                 
                 self.parent.mapView.setRegion(MKCoordinateRegion(rect), animated: true)
-            }
-        }
-        
-        func getDestinationRoute(from userLocation: CLLocationCoordinate2D,
-                                 to destinationCoordinator: CLLocationCoordinate2D,
-                                 completion: @escaping(MKRoute) -> Void) {
-            
-            let request                 = MKDirections.Request()
-            let userPlacemark           = MKPlacemark(coordinate: userLocation)
-            let destinationPlacemark    = MKPlacemark(coordinate: destinationCoordinator)
-            
-            request.source      = MKMapItem(placemark: userPlacemark)
-            request.destination = MKMapItem(placemark: destinationPlacemark)
-            
-            let direction = MKDirections(request: request)
-             
-            direction.calculate { response, error in
-                if let error = error {
-                    
-                    print("DEBUG: Failed to get direction with erorr \(error.localizedDescription)")
-                    return
-                }
-                
-                guard let route = response?.routes.first else { return }
-                completion(route)
             }
         }
         

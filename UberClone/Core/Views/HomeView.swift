@@ -10,30 +10,45 @@ import SwiftUI
 struct HomeView: View {
     
     //MARK: PROPERTIES
-    @State private var showLocationSearchView: Bool = false
+    @State private var mapViewState: MapViewState = .noInput
+    @EnvironmentObject var locationSearchViewModel: LocationSearchViewModel
     
     //MARK: BODY
     var body: some View {
-        ZStack(alignment: .top) {
-            UberMapViewPresentable()
-                .ignoresSafeArea()
-            
-            if showLocationSearchView {
-                LocationSearchView(showLocationSearchView: $showLocationSearchView)
-            } else {
-                LocationSearchActivationView()
-                    .padding(.top, 72)
-                    .onTapGesture {
-                        withAnimation {
-                            self.showLocationSearchView.toggle()
+        ZStack(alignment: .bottom) {
+            ZStack(alignment: .top) {
+                UberMapViewPresentable(mapViewState: $mapViewState)
+                    .ignoresSafeArea()
+                
+                if mapViewState  == .searchingForLocation {
+                    LocationSearchView(mapViewState: $mapViewState)
+                } else if mapViewState == .noInput {
+                    LocationSearchActivationView()
+                        .padding(.top, 72)
+                        .onTapGesture {
+                            withAnimation {
+                                self.mapViewState = .searchingForLocation
+                            }
                         }
-                    }
+                }
+                
+                MapViewActionButton(mapViewState: $mapViewState)
+                    .padding(.leading, 24)
+                    .padding(.top, 4)
             }
             
-            MapViewActionButton(showLocationSearchView: $showLocationSearchView)
-                .padding(.leading, 24)
-                .padding(.top, 4)
-            
+            if self.mapViewState == .locationSelected ||
+                self.mapViewState == .polylineAdded {
+                RideRequestView()
+                    .transition(.move(edge: .bottom))
+            }
+        }
+        .edgesIgnoringSafeArea(.bottom)
+        .onReceive(LocationManager.shared.$userLocationCoordinate) { locationCoordinate in
+            if let locationCoordinate = locationCoordinate {
+                print("DEBUG: Current User Location: \(locationCoordinate)")
+                self.locationSearchViewModel.userLocationCoordiante = locationCoordinate
+            }
         }
     }
 }
@@ -41,4 +56,5 @@ struct HomeView: View {
 //MARK: PREVIEW
 #Preview {
     HomeView()
+        .environmentObject(LocationSearchViewModel())
 }

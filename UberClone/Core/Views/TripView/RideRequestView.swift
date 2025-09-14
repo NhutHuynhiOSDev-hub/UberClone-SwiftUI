@@ -9,9 +9,11 @@ import SwiftUI
 
 struct RideRequestView: View {
     
+    //MARK: PROPERTIES
     @State private var selectedRideType: RideType = .uberX
     @EnvironmentObject var locationSearchViewModel: LocationSearchViewModel
     
+    //MARK: BODY
     var body: some View {
         VStack(spacing: 8) {
             Capsule()
@@ -55,11 +57,12 @@ struct RideRequestView: View {
             }
         }//:VSTACK
         .padding(.bottom, 32)
-        .background(Color(.white))
+        .background(Color.theme.backgroundColor)
         .cornerRadius(16)
     }
 }
 
+//MARK: TRIP INFO
 struct TripInfoView: View {
     
     @ObservedObject var locationSearchViewModel: LocationSearchViewModel
@@ -81,12 +84,10 @@ struct TripInfoView: View {
             }
             
             HStack {
-                if let location = self.locationSearchViewModel.selectedUberLocation {
-                    Text(location.title)
-                        .font(.system(size: 16)
-                            .weight(.bold))
-                        .foregroundStyle(.black)
-                }
+                Text(self.locationSearchViewModel.selectedUberLocation?.title ?? "Destination")
+                    .font(.system(size: 16)
+                        .weight(.bold))
+                    .foregroundStyle(Color.theme.primaryTextColor)
                 
                 Spacer()
                 
@@ -100,6 +101,7 @@ struct TripInfoView: View {
     }
 }
 
+//MARK: RIDE OPTIONS
 struct RideOptions: View {
     
     @Binding var selectedRideType       : RideType
@@ -133,9 +135,10 @@ struct RideOptions: View {
                         .padding()
                     }
                     .frame(width: UIScreen.main.bounds.width/3, height: 140)
-                    .foregroundStyle(rideType == self.selectedRideType ? .white : .black)
+                    .foregroundStyle(rideType == self.selectedRideType ? .white : Color.theme.primaryTextColor)
                     .scaleEffect(rideType == self.selectedRideType ? 1.2 : 1.0)
-                    .background(Color(rideType == self.selectedRideType ? .systemBlue : .systemGroupedBackground))
+                    .background(
+                        rideType == self.selectedRideType ? Color(.systemBlue) : Color.theme.secondaryBackgroundColor)
                     .cornerRadius(10)
                     .onTapGesture(perform: {
                         withAnimation(.spring()) {
@@ -149,6 +152,7 @@ struct RideOptions: View {
     }
 }
 
+//MARK: PAYMENT OPTIONS
 struct PaymentOptionView: View {
     var body: some View {
         HStack(spacing: 12) {
@@ -177,6 +181,7 @@ struct PaymentOptionView: View {
     }
 }
 
+//MARK: INDICATOR VIEW
 struct IndicatorView: View {
     var body: some View {
         VStack {
@@ -189,13 +194,13 @@ struct IndicatorView: View {
                 .frame(width: 1, height: 32)
             
             Rectangle()
-                .fill(Color(.black))
+                .fill(Color.theme.primaryTextColor)
                 .frame(width: 8, height: 8)
         }//:VSTACK
     }
 }
 
-
+//MARK: PREVIEW
 struct RiderequestView_Preview: PreviewProvider {
     static var previews: some View {
         RideRequestView()

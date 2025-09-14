@@ -28,18 +28,20 @@ struct LocationSearchView: View {
                         .frame(width: 1, height: 24)
                     
                     Rectangle()
-                        .fill(Color(.black))
+                        .fill(Color.theme.primaryTextColor)
                         .frame(width: 6, height: 6)
                 }//:VSTACk
                 
                 VStack {
                     TextField("Current location",  text: $startLocationText)
                         .frame(height: 32)
+                        .foregroundStyle(Color.theme.primaryTextColor)
                         .background(Color(.systemGroupedBackground))
                         .padding(.trailing)
-                    
+                        
                     TextField("Where to?",  text: $locationSearchViewModel.queryFrament)
                         .frame(height: 32)
+                        .foregroundStyle(Color.theme.primaryTextColor)
                         .background(Color(.systemGray4))
                         .padding(.trailing)
                 }
@@ -65,7 +67,7 @@ struct LocationSearchView: View {
                 }//:VSTACK
             }//:SCROLL
         } //:VSTACK
-        .background(Color(.systemBackground))
+        .background(Color.theme.backgroundColor)
     }
 }
 

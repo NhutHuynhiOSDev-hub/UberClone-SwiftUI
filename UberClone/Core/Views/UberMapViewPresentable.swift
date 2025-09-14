@@ -43,6 +43,8 @@ struct UberMapViewPresentable: UIViewRepresentable {
                 context.coordinator.configurePolyline(withDestinationCoordinate: coordinate)
             }
             break
+        case .polylineAdded:
+            break
         case .searchingForLocation:
             break
         }
@@ -110,6 +112,7 @@ extension UberMapViewPresentable {
             self.parent.locationSearchViewModel.getDestinationRoute(from: userLocationCoordinates, to: coordinate) { route in
                 
                 self.parent.mapView.addOverlay(route.polyline)
+                self.parent.mapViewState = .polylineAdded
                 
                 let rect = self.parent.mapView.mapRectThatFits(route.polyline.boundingMapRect,
                                                                edgePadding: .init(top: 62, left: 32, bottom: UIScreen.main.bounds.size.height/1.5, right: 32))
